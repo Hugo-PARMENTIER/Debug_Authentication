@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y \
     libxmlsec1-dev \
     libxmlsec1-openssl \
     libxmlsec1 \
+    zlib1g-dev \
     gcc \
     && rm -rf /var/lib/apt/lists/*
 
