@@ -9,7 +9,7 @@ def parse_id_token(token: str) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """
     try:
         header = jwt.get_unverified_header(token)
-        payload = jwt.decode(token, options={"verify_signature": False})
+        payload = jwt.decode(token, options={"verify_signature": False}, algorithms=["HS256", "RS256", "ES256"])
         return header, payload
     except Exception as e:
         raise ValueError(f"Invalid JWT format: {e}")
@@ -19,7 +19,7 @@ def get_mock_oidc_token() -> str:
     Generates a mock OIDC token for testing the UI without Okta connection.
     """
     header = {
-        "alg": "RS256",
+        "alg": "HS256",
         "kid": "mock-key-id-12345"
     }
     
@@ -43,6 +43,6 @@ def get_mock_oidc_token() -> str:
         "roles": ["read", "write"]
     }
     
-    # Sign with a mock symmetric key for structural validity (even if header says RS256 for display)
-    token = jwt.encode(payload, "mock_secret", algorithm="HS256", headers=header)
+    # Sign with a mock symmetric key for structural validity
+    token = jwt.encode(payload, "mock_secret", algorithm="HS256")
     return token

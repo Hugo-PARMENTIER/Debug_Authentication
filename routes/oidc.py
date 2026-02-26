@@ -30,8 +30,13 @@ async def oidc_callback(request: Request):
     is_mock = request.query_params.get('mock') == 'true' or os.getenv("MOCK_MODE", "false").lower() == "true"
     
     if is_mock:
-        token_str = get_mock_oidc_token()
-        token = {"id_token": token_str, "access_token": "mock_access_token"}
+        try:
+            token_str = get_mock_oidc_token()
+            token = {"id_token": token_str, "access_token": "mock_access_token"}
+        except Exception as e:
+            return request.app.state.templates.TemplateResponse(
+                "error.html", {"request": request, "error": f"Erreur de génération du token mock OIDC: {e}"}
+            )
     else:
         try:
             oauth = request.app.state.oauth
@@ -57,7 +62,8 @@ async def oidc_callback(request: Request):
                 "header": header,
                 "payload": payload,
                 "header_json": json.dumps(header, indent=2),
-                "payload_json": json.dumps(payload, indent=2)
+                "payload_json": json.dumps(payload, indent=2),
+                "validation_errors": []
             }
         )
     except Exception as e:
