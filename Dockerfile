@@ -19,7 +19,7 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt .
 
 # Installer les dépendances Python
-RUN pip install --no-cache-dir --no-binary xmlsec -r requirements.txt
+RUN pip install --no-cache-dir --no-binary lxml,xmlsec -r requirements.txt
 
 # Copier le reste du code de l'application
 COPY . .
