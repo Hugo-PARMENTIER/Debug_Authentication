@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Erreur inattendue{% endblock %}
+
+{% block content %}
+<div class="alert alert-danger shadow-sm mt-5" role="alert">
+    <h4 class="alert-heading d-flex align-items-center">
+        <span class="fs-2 me-2">🚨</span> Une erreur est survenue !
+    </h4>
+    <p class="mt-3">Détails de l'erreur :</p>
+    <pre class="bg-dark text-white p-3 rounded text-wrap">{{ error }}</pre>
+    <hr>
+    <p class="mb-0">
+        <a href="/" class="btn btn-sm btn-danger">&larr; Retour à l'accueil</a>
+        <button class="btn btn-sm btn-outline-secondary ms-2" onclick="window.location.reload();">Réessayer</button>
+    </p>
+</div>
+{% endblock %}

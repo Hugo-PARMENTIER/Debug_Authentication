@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}Résultats {{ type }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h2 class="display-6 d-flex align-items-center">
+            Résultat <span class="badge text-bg-{% if type == 'OIDC' %}primary{% else %}success{% endif %} ms-3">{{ type
+                }}</span>
+        </h2>
+        <a href="/" class="btn btn-outline-secondary btn-sm mt-2">&larr; Retour à l'accueil</a>
+    </div>
+</div>
+
+{% if validation_errors %}
+<div class="alert alert-danger" role="alert">
+    <h4 class="alert-heading">⚠️ Erreurs de validation:</h4>
+    <ul>
+        {% for err in validation_errors %}
+        <li>{{ err }}</li>
+        {% endfor %}
+    </ul>
+    <p class="mb-0 text-muted small">La transaction a échoué car la signature ou l'assertion n'est pas jugée de
+        confiance.</p>
+</div>
+{% else %}
+<div class="alert alert-success d-flex align-items-center" role="alert">
+    <div>
+        ✅ Flux validé ou mock succès.
+    </div>
+</div>
+{% endif %}
+
+{% if type == 'OIDC' %}
+<!-- =================== OIDC View =================== -->
+<div class="card mb-4 shadow-sm border-0">
+    <div class="card-header bg-body-tertiary d-flex justify-content-between align-items-center">
+        <strong>Raw ID Token (JWT)</strong>
+        <button class="btn btn-sm btn-outline-secondary copy-btn" data-target="raw-token">Copier</button>
+    </div>
+    <div class="card-body p-0">
+        <pre
+            class="m-0"><code id="raw-token" class="language-plaintext p-3 rounded-bottom text-break" style="white-space: pre-wrap;">{{ raw_token }}</code></pre>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-5">
+        <div class="card mb-4 shadow-sm border-0 h-100">
+            <div class="card-header bg-body-tertiary">
+                <strong>En-tête (Header)</strong>
+            </div>
+            <div class="card-body p-0">
+                <pre class="m-0 h-100"><code class="language-json p-3 rounded-bottom">{{ header_json }}</code></pre>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-7">
+        <div class="card mb-4 shadow-sm border-0 h-100">
+            <div class="card-header bg-body-tertiary d-flex justify-content-between align-items-center">
+                <strong>Payload JSON Brut</strong>
+                <button class="btn btn-sm btn-outline-secondary copy-btn" data-target="payload-json">Copier</button>
+            </div>
+            <div class="card-body p-0">
+                <pre
+                    class="m-0 h-100"><code id="payload-json" class="language-json p-3 rounded-bottom">{{ payload_json }}</code></pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4 shadow-sm border-0">
+    <div class="card-header bg-body-tertiary">
+        <strong>Claims Séparés</strong>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover m-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th style="width: 25%">Claim</th>
+                        <th>Valeur</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for key, value in payload.items() %}
+                    <tr>
+                        <td class="fw-bold text-monospace">{{ key }}</td>
+                        <td class="text-break">
+                            {% if value is mapping or (value is sequence and value is not string) %}
+                            <pre
+                                class="m-0 p-2 bg-body-tertiary rounded"><code class="language-json text-wrap">{{ value | string | replace("'", '"') }}</code></pre>
+                            {% else %}
+                            <span>{{ value }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% elif type == 'SAML' %}
+<!-- =================== SAML View =================== -->
+<div class="card mb-4 shadow-sm border-0">
+    <div class="card-header bg-body-tertiary d-flex justify-content-between align-items-center">
+        <strong>Raw SAML Assertion (XML)</strong>
+        <button class="btn btn-sm btn-outline-secondary copy-btn" data-target="raw-xml">Copier XML</button>
+    </div>
+    <div class="card-body p-0">
+        <pre class="m-0"><code id="raw-xml" class="language-xml p-3 rounded-bottom">{{ raw_xml }}</code></pre>
+    </div>
+</div>
+
+<div class="card mb-4 shadow-sm border-0">
+    <div class="card-header bg-body-tertiary">
+        <strong>Informations Analysées</strong>
+    </div>
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-3 text-muted">Issuer</dt>
+            <dd class="col-sm-9"><code>{{ parsed_data.issuer }}</code></dd>
+
+            <dt class="col-sm-3 text-muted">NameID (Subject)</dt>
+            <dd class="col-sm-9"><span class="badge text-bg-success py-2 px-3 fs-6">{{ parsed_data.name_id }}</span>
+            </dd>
+
+            <dt class="col-sm-3 text-muted">Status Code</dt>
+            <dd class="col-sm-9"><code>{{ parsed_data.status_code }}</code></dd>
+
+            <dt class="col-sm-3 text-muted">Destination</dt>
+            <dd class="col-sm-9"><code class="text-break">{{ parsed_data.destination }}</code></dd>
+        </dl>
+    </div>
+</div>
+
+<div class="card mb-4 shadow-sm border-0">
+    <div class="card-header bg-body-tertiary d-flex justify-content-between align-items-center">
+        <strong>Attributs SAML (User Profile)</strong>
+        <button class="btn btn-sm btn-outline-secondary copy-btn" data-target="parsed-json">Copier JSON</button>
+    </div>
+    <div class="card-body p-0">
+        <div class="d-none" id="parsed-json">{{ parsed_data_json }}</div>
+        <div class="table-responsive">
+            <table class="table table-striped table-hover m-0" style="table-layout: fixed;">
+                <thead class="table-dark">
+                    <tr>
+                        <th style="width: 35%">Nom d'Attribut (Name)</th>
+                        <th>Valeur(s)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for key, val in parsed_data.attributes.items() %}
+                    <tr>
+                        <td class="fw-bold text-monospace text-break">{{ key }}</td>
+                        <td class="text-break">
+                            {% if val is string %}
+                            {{ val }}
+                            {% elif val is iterable %}
+                            <ul class="mb-0 m-0 p-0" style="list-style-type: none;">
+                                {% for item in val %}
+                                <li class="badge text-bg-light border text-dark fs-6">{{ item }}</li>
+                                {% endfor %}
+                            </ul>
+                            {% else %}
+                            {{ val }}
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="2" class="text-center py-4 text-muted fst-italic">Aucun attribut trouvé dans
+                            l'assertion statement.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endif %}
+{% endblock %}

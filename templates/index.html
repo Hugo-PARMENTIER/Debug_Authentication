@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Okta Debug - Accueil{% endblock %}
+
+{% block content %}
+<div class="px-4 py-5 my-5 text-center">
+    <h1 class="display-5 fw-bold text-body-emphasis">Okta Debug Authentication</h1>
+    <div class="col-lg-8 mx-auto">
+        <p class="lead mb-4">Un outil complet et sécurisé pour initier et déboguer les flux <strong>OIDC (Authorization
+                Code)</strong> et <strong>SAML 2.0</strong>. Observez en clair les tokens et assertions retournés par
+            votre Identity Provider Okta.</p>
+
+        {% if mock_mode %}
+        <div class="alert alert-warning text-center">
+            <strong>Mode MOCK activé!</strong> Les clics généreront de fausses assertions simulées en local au lieu
+            d'interroger Okta. Parfait pour tester le rendu de l'interface hors connexion.
+        </div>
+        {% endif %}
+
+        <div class="d-grid gap-3 d-sm-flex justify-content-sm-center">
+            {% if mock_mode or oidc_ready %}
+            <a href="/oidc/login" class="btn btn-primary btn-lg px-4 gap-3 shadow hero-btn">Démarrer
+                OIDC<br><small>(Authorization Code)</small></a>
+            {% else %}
+            <a href="#" class="btn btn-secondary btn-lg px-4 gap-3 hero-btn disabled"
+                title="Manque des variables dans .env">OIDC Non Configuré</a>
+            {% endif %}
+
+            {% if mock_mode or saml_ready %}
+            <a href="/saml/login" class="btn btn-success btn-lg px-4 shadow hero-btn">Démarrer SAML
+                2.0<br><small>(SSO)</small></a>
+            {% else %}
+            <a href="#" class="btn btn-secondary btn-lg px-4 hero-btn disabled"
+                title="Manque des variables dans .env">SAML Non Configuré</a>
+            {% endif %}
+        </div>
+
+        <div class="mt-5 text-muted small">
+            <p>Assurez-vous d'avoir bien configuré votre fichier <code>.env</code> avant de lancer les flux réels.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

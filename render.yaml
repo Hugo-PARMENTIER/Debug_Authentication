@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: okta-debug-auth
+    env: docker
+    region: frankfurt
+    plan: free
+    dockerCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: SECRET_KEY
+        generateValue: true
+      - key: MOCK_MODE
+        value: "false"
+      # Variables OIDC/SAML à configurer manuellement dans le dashboard Render
+      # - OKTA_DOMAIN
+      # - OKTA_CLIENT_ID
+      # - OKTA_CLIENT_SECRET
+      # - OKTA_AUTH_SERVER_ID
+      # - OKTA_SAML_METADATA_XML
