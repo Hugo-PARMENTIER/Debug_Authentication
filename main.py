@@ -12,8 +12,18 @@ import routes.saml
 # Tenter d'importer le parser SAML Okta si présent
 try:
     from onelogin.saml2.idp_metadata_parser import OneLogin_Saml2_IdPMetadataParser
-except ImportError:
+except ImportError as e:
     OneLogin_Saml2_IdPMetadataParser = None
+    print(f"Warning: OneLogin_Saml2_IdPMetadataParser could not be imported. This might be due to missing xmlsec dependencies. Error: {e}")
+
+# Diagnostic supplémentaire pour python3-saml
+try:
+    import onelogin.saml2.auth
+    print("SAML: OneLogin_Saml2_Auth imported successfully.")
+except ImportError as e:
+    print(f"CRITICAL: Failed to import python3-saml! Error: {e}")
+    import traceback
+    traceback.print_exc()
 
 # Charger l'environnement
 load_dotenv()

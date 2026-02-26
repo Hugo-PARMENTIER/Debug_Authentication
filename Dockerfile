@@ -8,8 +8,10 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y \
     pkg-config \
     libxml2-dev \
+    libxslt1-dev \
     libxmlsec1-dev \
     libxmlsec1-openssl \
+    libxmlsec1 \
     gcc \
     && rm -rf /var/lib/apt/lists/*
 
@@ -17,7 +19,7 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt .
 
 # Installer les dépendances Python
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --no-binary xmlsec -r requirements.txt
 
 # Copier le reste du code de l'application
 COPY . .
