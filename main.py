@@ -5,6 +5,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from authlib.integrations.starlette_client import OAuth
 import os
 from dotenv import load_dotenv
+from datetime import datetime, timezone
 
 import routes.oidc
 import routes.saml
@@ -102,6 +103,11 @@ app.include_router(routes.saml.router, prefix="/saml", tags=["SAML"])
 os.makedirs("static/css", exist_ok=True)
 os.makedirs("static/js", exist_ok=True)
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
+@app.get("/health")
+async def health():
+    """Health check endpoint."""
+    return {"status": "healthy", "timestamp": datetime.now(timezone.utc).isoformat()}
 
 @app.get("/")
 async def home(request: Request):
