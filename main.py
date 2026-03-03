@@ -1,4 +1,5 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Form
+from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
@@ -96,6 +97,14 @@ if metadata_url and OneLogin_Saml2_IdPMetadataParser:
 
 app.state.saml_idp_settings = saml_settings
 
+@app.post("/config")
+async def update_config(request: Request, oidc_metadata_url: str = Form(None), saml_metadata_url: str = Form(None)):
+    if oidc_metadata_url:
+        request.session['oidc_metadata_url'] = oidc_metadata_url
+    if saml_metadata_url:
+        request.session['saml_metadata_url'] = saml_metadata_url
+    return RedirectResponse(url="/", status_code=303)
+
 # --- Routes et Mounts ---
 app.include_router(routes.oidc.router, prefix="/oidc", tags=["OIDC"])
 app.include_router(routes.saml.router, prefix="/saml", tags=["SAML"])
@@ -131,9 +140,13 @@ async def health():
 @app.get("/")
 async def home(request: Request):
     """Page d'accueil de l'application de debug."""
+    # Re-evaluate settings based on session
+    oidc_ready = bool(request.session.get('oidc_metadata_url') or (os.getenv("OKTA_DOMAIN") and os.getenv("OKTA_CLIENT_ID")))
+    saml_ready = bool(request.session.get('saml_metadata_url') or os.getenv("OKTA_SAML_METADATA_XML"))
+
     return templates.TemplateResponse("index.html", {
         "request": request, 
         "mock_mode": os.getenv("MOCK_MODE", "false").lower() == "true",
-        "oidc_ready": bool(domain and client_id),
-        "saml_ready": bool(saml_settings)
+        "oidc_ready": oidc_ready,
+        "saml_ready": saml_ready
     })

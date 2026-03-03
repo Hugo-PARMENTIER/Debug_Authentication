@@ -1,64 +1,61 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Initialize syntax highlighting on loaded code blocks
-    document.querySelectorAll('pre code').forEach((el) => {
-        hljs.highlightElement(el);
-    });
-
-    // 2. Dark/Light Theme Toggle
-    const themeToggleBtn = document.getElementById('theme-toggle');
-    const themeIcon = document.getElementById('theme-icon');
-    const htmlElement = document.documentElement;
-    
-    // Check local storage setting or default to dark
-    const currentTheme = localStorage.getItem('theme') || 'dark';
-    setTheme(currentTheme);
-
-    if (themeToggleBtn) {
-        themeToggleBtn.addEventListener('click', () => {
-            const newTheme = htmlElement.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark';
-            setTheme(newTheme);
-        });
+    const resultsContainer = document.getElementById('results');
+    const loadingContainer = document.getElementById('loading');
+    const startOidcBtn = document.getElementById('startOidc');
+    if (startOidcBtn) {
+        startOidcBtn.addEventListener('click', () => startFlow('/oidc/login'));
     }
 
-    function setTheme(theme) {
-        htmlElement.setAttribute('data-bs-theme', theme);
-        localStorage.setItem('theme', theme);
-        
-        if (theme === 'dark') {
-            themeToggleBtn.classList.replace('btn-outline-dark', 'btn-outline-light');
-            themeIcon.textContent = '🌙';
-        } else {
-            themeToggleBtn.classList.replace('btn-outline-light', 'btn-outline-dark');
-            themeIcon.textContent = '☀️';
+    const startSamlBtn = document.getElementById('startSaml');
+    if (startSamlBtn) {
+        startSamlBtn.addEventListener('click', () => startFlow('/saml/login'));
+    }
+
+    async function startFlow(url) {
+        loadingContainer.style.display = 'block';
+        resultsContainer.innerHTML = '';
+
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || `HTTP error! status: ${response.status}`);
+            }
+            
+            renderResults(data);
+
+        } catch (error) {
+            renderResults({type: 'error', message: 'Failed to initiate login: ' + error.message});
+        } finally {
+            loadingContainer.style.display = 'none';
         }
     }
 
-    // 3. Copy to clipboard functionality
-    const copyBtns = document.querySelectorAll('.copy-btn');
-    copyBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const targetId = btn.getAttribute('data-target');
-            const targetEl = document.getElementById(targetId);
-            
-            if (targetEl) {
-                const textToCopy = targetEl.textContent;
-                
-                navigator.clipboard.writeText(textToCopy).then(() => {
-                    const originalText = btn.textContent;
-                    btn.textContent = 'Copié !';
-                    btn.classList.add('btn-success');
-                    btn.classList.remove('btn-outline-secondary');
-                    
-                    setTimeout(() => {
-                        btn.textContent = originalText;
-                        btn.classList.remove('btn-success');
-                        btn.classList.add('btn-outline-secondary');
-                    }, 2000);
-                }).catch(err => {
-                    console.error("Failed to copy text: ", err);
-                    alert("Impossible de copier dans le presse-papier.");
-                });
-            }
+    function renderResults(data) {
+        if (!data || !data.type) {
+            resultsContainer.innerHTML = `<div class="alert alert-danger">Invalid data received.</div>`;
+            return;
+        }
+
+        if (data.type === 'error') {
+            resultsContainer.innerHTML = `<div class="alert alert-danger">${data.message}</div>`;
+            return;
+        }
+
+        if (data.type === 'OIDC') {
+            resultsContainer.innerHTML = `
+                <h3>OIDC Results</h3>
+                <pre><code class="json">${JSON.stringify(data.payload, null, 2)}</code></pre>
+            `;
+        } else if (data.type === 'SAML') {
+            resultsContainer.innerHTML = `
+                <h3>SAML Results</h3>
+                <pre><code class="xml">${data.raw_xml}</code></pre>
+            `;
+        }
+        document.querySelectorAll('pre code').forEach((el) => {
+            hljs.highlightElement(el);
         });
-    });
+    }
 });

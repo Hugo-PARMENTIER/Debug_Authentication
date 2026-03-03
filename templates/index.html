@@ -17,27 +17,80 @@
         </div>
         {% endif %}
 
+        <div class="d-grid gap-3 d-sm-flex justify-content-sm-center mb-3">
+            <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#configModal">
+                Configurer les métadonnées
+            </button>
+        </div>
+
         <div class="d-grid gap-3 d-sm-flex justify-content-sm-center">
             {% if mock_mode or oidc_ready %}
-            <a href="/oidc/login" class="btn btn-primary btn-lg px-4 gap-3 shadow hero-btn">Démarrer
-                OIDC<br><small>(Authorization Code)</small></a>
+            <button id="startOidc" class="btn btn-primary btn-lg px-4 gap-3 shadow hero-btn">Démarrer
+                OIDC<br><small>(Authorization Code)</small></button>
             {% else %}
-            <a href="#" class="btn btn-secondary btn-lg px-4 gap-3 hero-btn disabled"
-                title="Manque des variables dans .env">OIDC Non Configuré</a>
+            <button class="btn btn-secondary btn-lg px-4 gap-3 hero-btn" disabled>OIDC Non Configuré</button>
             {% endif %}
 
             {% if mock_mode or saml_ready %}
-            <a href="/saml/login" class="btn btn-success btn-lg px-4 shadow hero-btn">Démarrer SAML
-                2.0<br><small>(SSO)</small></a>
+            <button id="startSaml" class="btn btn-success btn-lg px-4 shadow hero-btn">Démarrer SAML
+                2.0<br><small>(SSO)</small></button>
             {% else %}
-            <a href="#" class="btn btn-secondary btn-lg px-4 hero-btn disabled"
-                title="Manque des variables dans .env">SAML Non Configuré</a>
+            <button class="btn btn-secondary btn-lg px-4 hero-btn" disabled>SAML Non Configuré</button>
             {% endif %}
         </div>
 
+        <div id="loading" class="mt-4" style="display: none;">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+        <div id="results" class="mt-4"></div>
+
+<div class="modal fade" id="configModal" tabindex="-1" aria-labelledby="configModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="configModalLabel">Configuration dynamique</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="configForm">
+                    <div class="mb-3">
+                        <label for="oidc_metadata_url" class="form-label">OIDC Metadata URL</label>
+                        <input type="url" class="form-control" id="oidc_metadata_url" name="oidc_metadata_url" placeholder="https://..../.well-known/openid-configuration">
+                    </div>
+                    <div class="mb-3">
+                        <label for="saml_metadata_url" class="form-label">SAML Metadata URL</label>
+                        <input type="url" class="form-control" id="saml_metadata_url" name="saml_metadata_url" placeholder="https://..../sso/saml/metadata">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Sauvegarder</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="mt-5 text-muted small">
     <p>Assurez-vous d'avoir bien configuré votre fichier <code>.env</code> avant de lancer les flux réels.</p>
-    <p><a href="/health" target="_blank" class="alert-link">Vérifier l'état du service</a></p>
+    <p><button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#healthModal">
+    Vérifier l'état du service
+</button></p>
+<div class="modal fade" id="healthModal" tabindex="-1" aria-labelledby="healthModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="healthModalLabel">État du service</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                ...
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
 </div>
     </div>
 </div>
