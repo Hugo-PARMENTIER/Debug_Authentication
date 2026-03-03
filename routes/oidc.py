@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, Body
 from fastapi.responses import JSONResponse
 import os
 from utils.token_utils import parse_id_token, get_mock_oidc_token
@@ -69,3 +69,18 @@ async def oidc_callback(request: Request):
         })
     except Exception as e:
         return JSONResponse({"type": "error", "message": f"Erreur de parsing du token: {e}"}, status_code=500)
+
+@router.post("/decode-jwt")
+async def decode_jwt_endpoint(data: dict = Body(...)):
+    """Decodes a JWT token."""
+    try:
+        token_str = data.get("token")
+        header, payload = parse_id_token(token_str)
+        return JSONResponse({
+            "type": "OIDC",
+            "raw_token": token_str,
+            "header": header,
+            "payload": payload,
+        })
+    except Exception as e:
+        return JSONResponse({"type": "error", "message": f"Erreur de parsing du token: {e}"}, status_code=400)

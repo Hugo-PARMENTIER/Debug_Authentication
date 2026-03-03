@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('startOidc').addEventListener('click', () => startAuth('oidc'));
     document.getElementById('startSaml').addEventListener('click', () => startAuth('saml'));
-    document.getElementById('decodeJwtBtn').addEventListener('click', decodeManualJwt);
 });
 
 function displayResults(data) {
@@ -70,24 +69,25 @@ async function startAuth(provider) {
     }
 }
 
-async function decodeManualJwt() {
-    const token = document.getElementById('manualJwt').value;
-    if (!token) return;
+async function decodeJwt() {
+    const token = document.getElementById('jwt-input').value.trim();
+    if (!token) return alert('Veuillez entrer un token');
     document.getElementById('loading').style.display = 'block';
-    document.getElementById('results').innerHTML = '';
+    const resultsContainer = document.getElementById('manual-results');
+    resultsContainer.innerHTML = '';
     try {
         const res = await fetch('/decode-jwt', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ token })
         });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        if (!res.ok) throw new Error(`Erreur ${res.status}`);
         const data = await res.json();
-        displayResults(data);
-        console.log('Decode success:', data);
+        displayResults(data); // Re-use the same display function
+        console.log('Décodage manuel OK:', data);
     } catch (err) {
-        document.getElementById('results').innerHTML = `<div class="alert alert-danger">${err.message}</div>`;
-        console.error('Decode error:', err);
+        resultsContainer.innerHTML = `<div class="alert alert-danger">${err.message}</div>`;
+        console.error('Erreur décodage:', err);
     } finally {
         document.getElementById('loading').style.display = 'none';
     }
