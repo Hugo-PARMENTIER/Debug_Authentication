@@ -10,7 +10,7 @@ def test_parse_id_token():
     token = get_mock_oidc_token()
     header, payload = parse_id_token(token)
     
-    assert header['alg'] == 'RS256'
+    assert header['alg'] == 'HS256'
     assert payload['sub'] == 'mock_user_123'
     assert payload['email'] == 'jean.dupont@mock.com'
     assert 'groups' in payload

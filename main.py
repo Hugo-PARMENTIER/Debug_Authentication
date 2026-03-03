@@ -6,6 +6,7 @@ from authlib.integrations.starlette_client import OAuth
 import os
 from dotenv import load_dotenv
 from datetime import datetime, timezone
+import google.generativeai as genai
 
 import routes.oidc
 import routes.saml
@@ -107,7 +108,25 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 @app.get("/health")
 async def health():
     """Health check endpoint."""
-    return {"status": "healthy", "timestamp": datetime.now(timezone.utc).isoformat()}
+    gemini_status = "Not available via API"
+    gemini_api_key = os.getenv("GEMINI_API_KEY")
+    if gemini_api_key:
+        try:
+            genai.configure(api_key=gemini_api_key)
+            model = genai.GenerativeModel('gemini-pro')
+            await model.count_tokens_async("")
+            gemini_status = "Accessible"
+        except Exception as e:
+            gemini_status = f"Error: {e}"
+
+    return {
+        "status": "healthy",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "gemini_quotas": {
+            "status": gemini_status,
+            "documentation": "https://ai.google.dev/gemini-api/docs/rate-limits"
+        }
+    }
 
 @app.get("/")
 async def home(request: Request):

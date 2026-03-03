@@ -49,6 +49,21 @@ La librairie `python3-saml` requiert l'installation de dépendances C sur votre 
 5. **Démarrer l'application**: `uvicorn main:app --reload`
 6. Rendez-vous sur `http://localhost:8000`
 
+## Sécurité & Bonnes Pratiques
+
+Cette application a été conçue comme un outil de débogage et non pour un environnement de production. Cependant, une attention particulière a été portée à la sécurité :
+
+*   **Gestion des secrets** : Toutes les informations sensibles (Client ID, Client Secret, etc.) sont gérées via des variables d'environnement et le fichier `.env`. Aucun secret n'est écrit en dur dans le code.
+*   **Validation des flux** : Les flux OIDC et SAML sont implémentés en utilisant des librairies reconnues (`authlib`, `python3-saml`) qui valident les signatures et les jetons.
+*   **Protection CSRF** : Une protection basique contre les attaques CSRF est assurée par le middleware de session de Starlette.
+*   **Mode Mock** : Le mode mock permet de tester l'interface sans exposer de secrets ou de devoir se connecter à un IdP.
+
+**Limites**:
+Cet outil est destiné à des fins de débogage. Ne l'utilisez pas en production sans des mesures de sécurité supplémentaires.
+
+**Contributions**:
+Les contributions pour améliorer la sécurité et les fonctionnalités de l'outil sont les bienvenues.
+
 ## Déploiement Gratuit sur Render
 
 L'application est configurée pour être déployée facilement via un container Docker sur (Render)[https://render.com].
